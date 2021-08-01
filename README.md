@@ -19,4 +19,4 @@ Thread 't2' has dequeued the item named '34'.
 Thread 't2' has been interrupted.
 Thread 't1' has been interrupted.
 ```
-*The number of logs depend of constant `ITEMS_BACTH`, defined in the **Program.cs** class*
+*The number of logs depend of constant `ITEMS_BATCH`, defined in the **Program.cs** class*

@@ -7,7 +7,7 @@ public class Program
 {
     static CustomQueue<string> items;
     static List<Thread> threads;
-    const int ITEMS_BACTH = 500;
+    const int ITEMS_BATCH = 500;
 
     public static void Main()
     {
@@ -25,21 +25,24 @@ public class Program
             threads = new List<Thread>() { t1, t2 };
 
             // First batch of data
-            for (int i = 0; i < ITEMS_BACTH; i++)
+            for (int i = 0; i < ITEMS_BATCH; i++)
             {
                 items.Enqueue(i.ToString());
             }
 
             threads.ForEach(t => t.Start());
 
-            // Wait some time
-            Thread.Sleep(2000);
+            // Wait some time for the threads process
+            Thread.Sleep(2500);
 
             // Second batch of data
-            for (int i = ITEMS_BACTH; i < ITEMS_BACTH * 2; i++)
+            for (int i = ITEMS_BATCH; i < ITEMS_BATCH * 2; i++)
             {
                 items.Enqueue(i.ToString());
             }
+
+            // Wait forthe threads to end they job
+            Thread.Sleep(2500);
         }
         catch (System.Exception ex)
         {
@@ -49,6 +52,8 @@ public class Program
         {
             // Kill associated subprocess with this CancellationToken
             cts.Cancel();
+
+            items.Enqueue("to force threads to wake up and process the cancellation token");
         }
     }
 
@@ -66,21 +71,25 @@ public class Program
         {
             if (cancelToken.IsCancellationRequested) return;
 
-            if (items.Count() > 0)
+            try
             {
-                var result = items.Dequeue();
-                Console.WriteLine($"Thread '{Thread.CurrentThread.Name}' has dequeued the item named '{result}'.");
-            }
-            else
-            {
-                try
+                if (items.Count() > 0)
+                {
+                    var result = items.Dequeue();
+                    Console.WriteLine($"Thread '{Thread.CurrentThread.Name}' has dequeued the item named '{result}'.");
+                }
+                else
                 {
                     Thread.Sleep(Timeout.Infinite);
                 }
-                catch (ThreadInterruptedException)
-                {
-                    Console.WriteLine($"Thread '{Thread.CurrentThread.Name}' has been interrupted.");
-                }
+            }
+            catch (ThreadInterruptedException)
+            {
+                Console.WriteLine($"Thread '{Thread.CurrentThread.Name}' has been interrupted.");
+            }
+            catch (Exception ex)
+            {
+                 Console.WriteLine($"Thread '{Thread.CurrentThread.Name}' has failed with error '{ex.Message}'.");
             }
         }
     }
